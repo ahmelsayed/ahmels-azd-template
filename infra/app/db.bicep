@@ -2,7 +2,6 @@ param name string
 param location string = resourceGroup().location
 param tags object = {}
 
-param databaseName string
 param postgresAdminUser string
 
 @secure()
@@ -17,7 +16,6 @@ module postgreSql '../core/database/postgresql/flexibleserver.bicep' = {
     administratorLoginPassword: postgresAdminPassword
     administratorLogin: postgresAdminUser
     allowAzureIPsFirewall: true
-    databaseNames: [ databaseName ]
     sku: {
       name: 'Standard_B1ms'
       tier: 'Burstable'

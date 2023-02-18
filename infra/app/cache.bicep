@@ -11,4 +11,5 @@ module cache '../core/cache/redis.bicep' = {
   }
 }
 
-output REDIS_HOST string = cache.outputs.REDIS_HOST
+output redisHost string = cache.outputs.redisHost
+output redisId string = cache.outputs.redisId

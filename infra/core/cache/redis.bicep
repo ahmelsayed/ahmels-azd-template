@@ -18,4 +18,5 @@ resource redisServer 'Microsoft.Cache/redis@2022-06-01' = {
 }
 
 
-output REDIS_HOST string = redisServer.properties.hostName
+output redisHost string = redisServer.properties.hostName
+output redisId string = redisServer.id

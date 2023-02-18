@@ -7,6 +7,7 @@ param appCommandLine string = ''
 param appServicePlanId string
 param appSettings object = {}
 param serviceName string = 'api'
+param redisCacheId string
 
 module api '../core/host/appservice.bicep' = {
   name: '${name}-app-module'
@@ -17,7 +18,7 @@ module api '../core/host/appservice.bicep' = {
     allowedOrigins: allowedOrigins
     appCommandLine: appCommandLine
     appServicePlanId: appServicePlanId
-    appSettings: appSettings
+    appSettings: union(appSettings, { REDIS_PASSWORD: listKeys(redisCacheId, '2020-06-01').primaryKey })
     runtimeName: 'dotnetcore'
     runtimeVersion: '6.0'
     scmDoBuildDuringDeployment: false

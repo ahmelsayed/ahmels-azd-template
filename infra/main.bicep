@@ -7,9 +7,9 @@ param apiServiceName string
 param appServicePlanName string
 param resourceGroupName string
 param postgreSqlName string
-param postgreSqlDatabaseName string
 param postgreSqlAdminUsername string
 param webServiceName string
+param redisCacheName string
 
 @secure()
 param postgreSqlAdminPassword string
@@ -20,6 +20,16 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
   location: location
   tags: tags
+}
+
+module cache './app/cache.bicep' = {
+  name: 'cache'
+  scope: rg
+  params: {
+    name: redisCacheName
+    location:location
+    tags: tags
+  }
 }
 
 // The application frontend
@@ -38,17 +48,23 @@ module web './app/web.bicep' = {
 module api './app/api.bicep' = {
   name: 'api'
   scope: rg
+  dependsOn: [
+    postgreSql
+    cache
+  ]
   params: {
     name: apiServiceName
     location: location
     tags: tags
     appServicePlanId: appServicePlan.outputs.id
     allowedOrigins: [ web.outputs.SERVICE_WEB_URI ]
+    redisCacheId: cache.outputs.redisId
     appSettings: {
       POSTGRES_HOST: postgreSql.outputs.postgresHost
       POSTGRES_PASSWORD: postgreSqlAdminPassword
-      POSTGRES_USER: postgreSqlAdminUsername
-      POSTGRES_DATABASE: postgreSqlDatabaseName
+      POSTGRES_USERNAME: postgreSqlAdminUsername
+      POSTGRES_DATABASE: 'postgres'
+      REDIS_HOST: cache.outputs.redisHost
     }
   }
 }
@@ -59,21 +75,10 @@ module postgreSql './app/db.bicep' = {
   scope: rg
   params: {
     name: postgreSqlName
-    databaseName: postgreSqlDatabaseName
     location: location
     tags: tags
     postgresAdminPassword: postgreSqlAdminPassword
     postgresAdminUser: postgreSqlAdminUsername
-  }
-}
-
-module cache './app/cache.bicep' = {
-  name: 'cache'
-  scope: rg
-  params: {
-    name: redisCacheName
-    location:location
-    tags: tags
   }
 }
 
@@ -92,7 +97,7 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
 }
 
 // Data outputs
-output POSTGRES_HOT string = postgreSql.outputs.postgresHost
+output POSTGRES_HOST string = postgreSql.outputs.postgresHost
 
 // App outputs
 output AZURE_LOCATION string = location

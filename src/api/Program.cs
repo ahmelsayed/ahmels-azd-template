@@ -1,15 +1,15 @@
-using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 using SimpleTodo.Api;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<ListsRepository>();
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddDbContext<TodoDb>(options =>
 {
-    var pgHost = builder.Configuration[builder.Configuration["POSTGRES_HOST"]];
-    var pgPassword = builder.Configuration[builder.Configuration["POSTGRES_PASSWORD"]];
-    var pgUser = builder.Configuration[builder.Configuration["POSTGRES_USER"]];
-    var pgDatabase = builder.Configuration[builder.Configuration["POSTGRES_DATABASE"]];
+    var pgHost = builder.Configuration["POSTGRES_HOST"];
+    var pgPassword = builder.Configuration["POSTGRES_PASSWORD"];
+    var pgUser = builder.Configuration["POSTGRES_USERNAME"];
+    var pgDatabase = builder.Configuration["POSTGRES_DATABASE"];
     var pgConnection = $"Host={pgHost};Database={pgDatabase};Username={pgUser};Password={pgPassword}";
     options.UseNpgsql(pgConnection, sqlOptions => sqlOptions.EnableRetryOnFailure());
 });
