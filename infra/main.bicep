@@ -1,15 +1,18 @@
 targetScope = 'subscription'
 
+param resourcesSuffix string = '10'
 param environmentName string
-param location string
 
-param apiServiceName string
-param appServicePlanName string
-param resourceGroupName string
-param postgreSqlName string
-param postgreSqlAdminUsername string
-param webServiceName string
-param redisCacheName string
+param resourceGroupName string = 'traditional-${resourcesSuffix}'
+param location string = 'eastus2'
+
+param apiServiceName string = 'ahmels-api-service-azd-${resourcesSuffix}'
+param appServicePlanName string = 'ahmels-asp-azd-${resourcesSuffix}'
+param postgreSqlAdminUsername string = 'apiuser'
+param postgreSqlName string = 'ahmels-postgres-azd-${resourcesSuffix}'
+param redisCacheName string = 'ahmels-redis-azd-${resourcesSuffix}'
+param webServiceName string = 'ahmels-web-app-name-azd-${resourcesSuffix}'
+
 
 @secure()
 param postgreSqlAdminPassword string
@@ -29,43 +32,6 @@ module cache './app/cache.bicep' = {
     name: redisCacheName
     location:location
     tags: tags
-  }
-}
-
-// The application frontend
-module web './app/web.bicep' = {
-  name: 'web'
-  scope: rg
-  params: {
-    name: webServiceName
-    location: location
-    tags: tags
-    appServicePlanId: appServicePlan.outputs.id
-  }
-}
-
-// The application backend
-module api './app/api.bicep' = {
-  name: 'api'
-  scope: rg
-  dependsOn: [
-    postgreSql
-    cache
-  ]
-  params: {
-    name: apiServiceName
-    location: location
-    tags: tags
-    appServicePlanId: appServicePlan.outputs.id
-    allowedOrigins: [ web.outputs.SERVICE_WEB_URI ]
-    redisCacheId: cache.outputs.redisId
-    appSettings: {
-      POSTGRES_HOST: postgreSql.outputs.postgresHost
-      POSTGRES_PASSWORD: postgreSqlAdminPassword
-      POSTGRES_USERNAME: postgreSqlAdminUsername
-      POSTGRES_DATABASE: 'postgres'
-      REDIS_HOST: cache.outputs.redisHost
-    }
   }
 }
 
@@ -96,11 +62,38 @@ module appServicePlan './core/host/appserviceplan.bicep' = {
   }
 }
 
-// Data outputs
-output POSTGRES_HOST string = postgreSql.outputs.postgresHost
+// The application frontend
+module web './app/web.bicep' = {
+  name: 'web'
+  scope: rg
+  params: {
+    name: webServiceName
+    location: location
+    tags: tags
+    appServicePlanId: appServicePlan.outputs.id
+  }
+}
+
+// The application backend
+module api './app/api.bicep' = {
+  name: 'api'
+  scope: rg
+  params: {
+    name: apiServiceName
+    location: location
+    tags: tags
+    appServicePlanId: appServicePlan.outputs.id
+    allowedOrigins: [ web.outputs.SERVICE_WEB_URI ]
+    redisCacheName: redisCacheName
+    appSettings: {
+      POSTGRES_HOST: postgreSql.outputs.postgresHost
+      POSTGRES_PASSWORD: postgreSqlAdminPassword
+      POSTGRES_USERNAME: postgreSqlAdminUsername
+      POSTGRES_DATABASE: 'postgres'
+    }
+  }
+}
 
 // App outputs
-output AZURE_LOCATION string = location
-output AZURE_TENANT_ID string = tenant().tenantId
 output REACT_APP_API_BASE_URL string = api.outputs.SERVICE_API_URI
 output REACT_APP_WEB_BASE_URL string = web.outputs.SERVICE_WEB_URI

@@ -58,7 +58,6 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' =
         endIpAddress: ip
     }
   }]
-
 }
 
 output POSTGRES_DOMAIN_NAME string = postgresServer.properties.fullyQualifiedDomainName
