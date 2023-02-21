@@ -1,11 +1,10 @@
 targetScope = 'subscription'
 
-param resourcesSuffix string = '10'
 param environmentName string
+param location string
+param resourceGroupName string = ''
 
-param resourceGroupName string = 'traditional-${resourcesSuffix}'
-param location string = 'eastus2'
-
+param resourcesSuffix string = '11'
 param apiServiceName string = 'ahmels-api-service-azd-${resourcesSuffix}'
 param appServicePlanName string = 'ahmels-asp-azd-${resourcesSuffix}'
 param postgreSqlAdminUsername string = 'apiuser'
@@ -13,14 +12,13 @@ param postgreSqlName string = 'ahmels-postgres-azd-${resourcesSuffix}'
 param redisCacheName string = 'ahmels-redis-azd-${resourcesSuffix}'
 param webServiceName string = 'ahmels-web-app-name-azd-${resourcesSuffix}'
 
-
 @secure()
 param postgreSqlAdminPassword string
 
 var tags = { 'azd-env-name': environmentName }
 
 resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
-  name: resourceGroupName
+  name: !empty(resourceGroupName) ? resourceGroupName : '${environmentName}-rg'
   location: location
   tags: tags
 }
