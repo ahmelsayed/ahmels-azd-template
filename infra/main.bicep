@@ -4,13 +4,13 @@ param environmentName string
 param location string
 param resourceGroupName string = ''
 
-param resourcesSuffix string = '11'
-param apiServiceName string = 'ahmels-api-service-azd-${resourcesSuffix}'
-param appServicePlanName string = 'ahmels-asp-azd-${resourcesSuffix}'
+param resourcesSuffix string
+param apiServiceName string = 'api-service-azd-${resourcesSuffix}'
+param appServicePlanName string = 'asp-azd-${resourcesSuffix}'
 param postgreSqlAdminUsername string = 'apiuser'
-param postgreSqlName string = 'ahmels-postgres-azd-${resourcesSuffix}'
-param redisCacheName string = 'ahmels-redis-azd-${resourcesSuffix}'
-param webServiceName string = 'ahmels-web-app-name-azd-${resourcesSuffix}'
+param postgreSqlName string = 'postgres-azd-${resourcesSuffix}'
+param redisCacheName string = 'redis-azd-${resourcesSuffix}'
+param webServiceName string = 'web-app-name-azd-${resourcesSuffix}'
 
 @secure()
 param postgreSqlAdminPassword string
