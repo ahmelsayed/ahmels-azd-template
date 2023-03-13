@@ -1,6 +1,7 @@
 param name string
 param location string = resourceGroup().location
 param tags object = {}
+param subnetId string
 
 module cache '../core/cache/redis.bicep' = {
   name: name
@@ -8,6 +9,7 @@ module cache '../core/cache/redis.bicep' = {
     name: name
     location: location
     tags: tags
+    subnetId: subnetId
   }
 }
 

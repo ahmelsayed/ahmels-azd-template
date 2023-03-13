@@ -4,17 +4,18 @@ param environmentName string
 param location string
 param resourceGroupName string = ''
 
-param resourcesSuffix string = '005'
+param resourcesSuffix string = '006'
 param postgreSqlAdminUsername string = 'apiuser'
 param postgreSqlName string = 'postgres-azd-${resourcesSuffix}'
 param redisCacheName string = 'redis-azd-${resourcesSuffix}'
 
-param acaLocation string = 'northcentralusstage' // use North Central US (Stage) for ACA resources
+// param acaLocation string = 'northcentralusstage' // use North Central US (Stage) for ACA resources
 param acaEnvironmentName string = 'aca-env'
 param webServiceName string = 'web-service'
 param apiServiceName string = 'api-service'
 param webImageName string = 'docker.io/ahmelsayed/springboard-web:latest'
 param apiImageName string = 'docker.io/ahmelsayed/springboard-api:p'
+param postgresPrivateDnsZoneName string = 'postgres-${resourcesSuffix}.private.postgres.database.azure.com'
 
 @secure()
 param postgreSqlAdminPassword string
@@ -27,6 +28,34 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   tags: tags
 }
 
+module vnet './core/networking/vnet.bicep' = {
+  name: 'vnet'
+  scope: rg
+  params: {
+    name: 'vnet'
+    location: location
+    tags: tags
+    addressPrefix: '10.0.0.0/16'
+    subnetName: 'infrastructure-subnet'
+    subnetAddressPrefix: '10.0.0.0/23'
+    postgresSubnetName: 'postgres-subnet'
+    postgresSubnetAddressPrefix: '10.0.2.0/24'
+  }
+}
+
+module postgresPrivateDnsZone './core/networking/privateDnsZone.bicep' = {
+  name: 'postgresPrivateDnsZone'
+  scope: rg
+  dependsOn: [
+    vnet
+  ]  
+  params: {
+    name: postgresPrivateDnsZoneName
+    tags: tags
+    vnetId: vnet.outputs.vnetId
+  }
+}
+
 module cache './app/cache.bicep' = {
   name: 'cache'
   scope: rg
@@ -34,6 +63,7 @@ module cache './app/cache.bicep' = {
     name: redisCacheName
     location:location
     tags: tags
+    subnetId: vnet.outputs.subnetId
   }
 }
 
@@ -46,6 +76,8 @@ module postgreSql './app/db.bicep' = {
     tags: tags
     postgresAdminPassword: postgreSqlAdminPassword
     postgresAdminUser: postgreSqlAdminUsername
+    subnetId: vnet.outputs.postgresSubnetId
+    privateDnsZoneId: postgresPrivateDnsZone.outputs.privateDnsZoneId
   }
 }
 
@@ -54,8 +86,9 @@ module acaEnvironment './core/host/container-apps-environment.bicep' = {
   scope: rg
   params: {
     name: acaEnvironmentName
-    location: acaLocation
+    location: location
     tags: tags
+    subnetResourceId: vnet.outputs.subnetId
   }
 }
 
@@ -64,7 +97,7 @@ module api './core/host/container-app.bicep' = {
   scope: rg
   params: {
     name: apiServiceName
-    location: acaLocation
+    location: location
     tags: tags
     managedEnvironmentId: acaEnvironment.outputs.id
     imageName: apiImageName
@@ -89,7 +122,7 @@ module web './core/host/container-app-1.bicep' = {
   scope: rg
   params: {
     name: webServiceName
-    location: acaLocation
+    location: location
     tags: tags
     managedEnvironmentId: acaEnvironment.outputs.id
     imageName: webImageName
