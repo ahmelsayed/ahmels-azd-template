@@ -10,3 +10,7 @@ module cache '../core/cache/redis.bicep' = {
     tags: tags
   }
 }
+
+output redisName string = cache.outputs.redisName
+output redisHost string = cache.outputs.redisHost
+output redisPort string = string(cache.outputs.redisPort)
