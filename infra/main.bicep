@@ -4,7 +4,7 @@ param environmentName string
 param location string
 param resourceGroupName string = ''
 
-param resourcesSuffix string = '006'
+param resourcesSuffix string
 param postgreSqlAdminUsername string = 'apiuser'
 param postgreSqlName string = 'postgres-azd-${resourcesSuffix}'
 param redisCacheName string = 'redis-azd-${resourcesSuffix}'
