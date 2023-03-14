@@ -1,6 +1,8 @@
 param name string
 param location string = resourceGroup().location
 param tags object = {}
+param subnetId string
+param privateDnsZoneId string
 
 param postgresAdminUser string
 
@@ -25,6 +27,8 @@ module postgreSql '../core/database/postgresql/flexibleserver.bicep' = {
       autoGrow: 'Enabled'
     }
     version: '14'
+    subnetId: subnetId
+    privateDnsZoneId: privateDnsZoneId
   }
 }
 

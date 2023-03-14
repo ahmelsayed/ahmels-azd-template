@@ -1,6 +1,7 @@
 param name string
 param location string = resourceGroup().location
 param tags object = {}
+param subnetId string
 
 resource redisServer 'Microsoft.Cache/redis@2022-06-01' = {
   location: location
@@ -8,12 +9,14 @@ resource redisServer 'Microsoft.Cache/redis@2022-06-01' = {
   name: name
   properties: {
     sku: {
-      name: 'Standard'
-      family: 'C'
+      name: 'Premium'
+      family: 'P'
       capacity: 1
     }
     redisConfiguration: {}
     redisVersion: '6'
+    // publicNetworkAccess: 'Disabled'
+    subnetId: subnetId
   }
 }
 

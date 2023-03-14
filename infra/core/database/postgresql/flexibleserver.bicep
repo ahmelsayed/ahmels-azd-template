@@ -11,6 +11,8 @@ param databaseNames array = []
 param allowAzureIPsFirewall bool = false
 param allowAllIPsFirewall bool = false
 param allowedSingleIPs array = []
+param subnetId string
+param privateDnsZoneId string
 
 // PostgreSQL version
 param version string
@@ -28,6 +30,10 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' =
     storage: storage
     highAvailability: {
       mode: 'Disabled'
+    }
+    network: {
+      delegatedSubnetResourceId: subnetId
+      privateDnsZoneArmResourceId: privateDnsZoneId
     }
   }
 
